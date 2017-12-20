@@ -4,3 +4,6 @@
 [submodule "openssl-microsoft"]
 	path = openssl-microsoft
 	url = https://github.com/Microsoft/openssl.git
+[submodule "gost-engine"]
+	path = gost-engine
+	url = https://github.com/gost-engine/engine.git
