@@ -1,3 +1,6 @@
 [submodule "openssl"]
 	path = openssl
 	url = https://github.com/openssl/openssl.git
+[submodule "openssl-microsoft"]
+	path = openssl-microsoft
+	url = https://github.com/Microsoft/openssl.git
