@@ -1,0 +1,110 @@
+diff -ru openssl/crypto/init.c openssl-patch/crypto/init.c
+--- openssl/crypto/init.c	2017-12-22 15:10:05.892340218 +0300
++++ openssl-patch/crypto/init.c	2017-12-22 13:47:42.504843617 +0300
+@@ -275,6 +275,18 @@
+     return 1;
+ }
+ # ifndef OPENSSL_NO_STATIC_ENGINE
++#  if !defined(OPENSSL_NO_GOST)
++static CRYPTO_ONCE engine_gost = CRYPTO_ONCE_STATIC_INIT;
++DEFINE_RUN_ONCE_STATIC(ossl_init_engine_gost)
++{
++#   ifdef OPENSSL_INIT_DEBUG
++    fprintf(stderr, "OPENSSL_INIT: ossl_init_engine_gost: "
++                    "engine_load_gost_int()\n");
++#   endif
++    engine_load_gost_int();
++    return 1;
++}
++#  endif
+ #  if !defined(OPENSSL_NO_HW) && !defined(OPENSSL_NO_HW_PADLOCK)
+ static CRYPTO_ONCE engine_padlock = CRYPTO_ONCE_STATIC_INIT;
+ DEFINE_RUN_ONCE_STATIC(ossl_init_engine_padlock)
+@@ -585,6 +597,11 @@
+             && !RUN_ONCE(&engine_dynamic, ossl_init_engine_dynamic))
+         return 0;
+ # ifndef OPENSSL_NO_STATIC_ENGINE
++#  if !defined(OPENSSL_NO_GOST)
++    if ((opts & OPENSSL_INIT_ENGINE_GOST)
++            && !RUN_ONCE(&engine_gost, ossl_init_engine_gost))
++        return 0;
++#  endif
+ #  if !defined(OPENSSL_NO_HW) && !defined(OPENSSL_NO_HW_PADLOCK)
+     if ((opts & OPENSSL_INIT_ENGINE_PADLOCK)
+             && !RUN_ONCE(&engine_padlock, ossl_init_engine_padlock))
+diff -ru openssl/engines/build.info openssl-patch/engines/build.info
+--- openssl/engines/build.info	2017-12-22 15:10:05.892340218 +0300
++++ openssl-patch/engines/build.info	2017-12-22 12:47:51.790697476 +0300
+@@ -6,6 +6,30 @@
+     IF[{- !$disabled{capieng} -}]
+       SOURCE[../libcrypto]=e_capi.c
+     ENDIF
++    SOURCE[../libcrypto]=../../gost-engine/gost_params.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_pmeth.c
++    SOURCE[../libcrypto]=../../gost-engine/gosthash2012.c
++    SOURCE[../libcrypto]=../../gost-engine/e_gost_err.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_eng.c
++    SOURCE[../libcrypto]=../../gost-engine/gost89.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_ec_sign.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_ctl.c
++    SOURCE[../libcrypto]=../../gost-engine/gosthash.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_defines.c
++    SOURCE[../libcrypto]=../../gost-engine/gost12sum.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_md.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_galois_precompiled.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_crypt.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_md2012.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_core.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_ameth.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_cipher.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_keywrap.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_ec_keyx.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_asn1.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_precompiled.c
++    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_mac.c
++    SOURCE[../libcrypto]=../../gost-engine/gostsum.c
+   ELSE
+     ENGINES=padlock
+     SOURCE[padlock]=e_padlock.c {- $target{padlock_asm_src} -}
+diff -ru openssl/include/openssl/crypto.h openssl-patch/include/openssl/crypto.h
+--- openssl/include/openssl/crypto.h	2017-12-22 15:10:05.892340218 +0300
++++ openssl-patch/include/openssl/crypto.h	2017-12-22 13:52:57.288310153 +0300
+@@ -371,6 +371,7 @@
+ # define OPENSSL_INIT_ENGINE_CAPI            0x00002000L
+ # define OPENSSL_INIT_ENGINE_PADLOCK         0x00004000L
+ # define OPENSSL_INIT_ENGINE_AFALG           0x00008000L
++# define OPENSSL_INIT_ENGINE_GOST            0x00020000L
+ /* OPENSSL_INIT flag 0x00010000 reserved for internal use */
+ /* OPENSSL_INIT flag range 0xfff00000 reserved for OPENSSL_init_ssl() */
+ /* Max OPENSSL_INIT flag value is 0x80000000 */
+@@ -379,6 +380,7 @@
+ # define OPENSSL_INIT_ENGINE_ALL_BUILTIN \
+     (OPENSSL_INIT_ENGINE_RDRAND | OPENSSL_INIT_ENGINE_DYNAMIC \
+     | OPENSSL_INIT_ENGINE_CRYPTODEV | OPENSSL_INIT_ENGINE_CAPI | \
++    OPENSSL_INIT_ENGINE_GOST | \
+     OPENSSL_INIT_ENGINE_PADLOCK)
+ 
+ 
+diff -ru openssl/include/openssl/engine.h openssl-patch/include/openssl/engine.h
+--- openssl/include/openssl/engine.h	2017-12-22 15:10:05.892340218 +0300
++++ openssl-patch/include/openssl/engine.h	2017-12-22 13:54:14.388179417 +0300
+@@ -330,6 +330,8 @@
+ # define ENGINE_load_dynamic() \
+     OPENSSL_init_crypto(OPENSSL_INIT_ENGINE_DYNAMIC, NULL)
+ # ifndef OPENSSL_NO_STATIC_ENGINE
++#  define ENGINE_load_gost() \
++    OPENSSL_init_crypto(OPENSSL_INIT_ENGINE_GOST, NULL)
+ #  define ENGINE_load_padlock() \
+     OPENSSL_init_crypto(OPENSSL_INIT_ENGINE_PADLOCK, NULL)
+ #  define ENGINE_load_capi() \
+diff -ru openssl/ssl/ssl_init.c openssl-patch/ssl/ssl_init.c
+--- openssl/ssl/ssl_init.c	2017-12-22 15:10:05.900340204 +0300
++++ openssl-patch/ssl/ssl_init.c	2017-12-22 13:55:10.084084957 +0300
+@@ -28,6 +28,7 @@
+     fprintf(stderr, "OPENSSL_INIT: ossl_init_ssl_base: "
+             "Adding SSL ciphers and digests\n");
+ #endif
++    ENGINE_register_all_pkey_asn1_meths();
+ #ifndef OPENSSL_NO_DES
+     EVP_add_cipher(EVP_des_cbc());
+     EVP_add_cipher(EVP_des_ede3_cbc());

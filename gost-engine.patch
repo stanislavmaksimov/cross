@@ -1,0 +1,27 @@
+diff -ru gost-engine/gost_eng.c gost-engine-patch/gost_eng.c
+--- gost-engine/gost_eng.c	2017-12-22 14:29:57.356587165 +0300
++++ gost-engine-patch/gost_eng.c	2017-12-22 14:28:47.508707064 +0300
+@@ -377,7 +377,7 @@
+     return ret;
+ }
+ 
+-void ENGINE_load_gost(void) {
++void engine_load_gost_int(void) {
+     ENGINE* toadd;
+     if (pmeth_GostR3410_2001)
+         return;
+diff -ru gost-engine/gost_grasshopper_math.h gost-engine-patch/gost_grasshopper_math.h
+--- gost-engine/gost_grasshopper_math.h	2017-12-22 14:29:57.356587165 +0300
++++ gost-engine-patch/gost_grasshopper_math.h	2017-12-22 14:28:47.508707064 +0300
+@@ -119,7 +119,11 @@
+ extern uint8_t grasshopper_galois_index_of[256];
+ 
+ static GRASSHOPPER_INLINE uint8_t grasshopper_galois_mul(uint8_t x, uint8_t y) {
++#ifndef __GNUC__
++    if (x != 0 ^&^& y != 0) {
++#else
+     if (__builtin_expect(x != 0 && y != 0, 1)) {
++#endif
+         return grasshopper_galois_alpha_to[(grasshopper_galois_index_of[x] + grasshopper_galois_index_of[y]) %
+                                          GRASSHOPPER_GALOIS_FIELD_SIZE];
+     } else {
