@@ -122,8 +122,16 @@ diff -ru openssl/include/openssl/engine.h openssl-patch/include/openssl/engine.h
  #  define ENGINE_load_capi() \
 diff -ru openssl/ssl/ssl_init.c openssl-patch/ssl/ssl_init.c
 --- openssl/ssl/ssl_init.c	2017-12-25 09:28:25.397264067 +0300
-+++ openssl-patch/ssl/ssl_init.c	2017-12-25 09:27:58.397279970 +0300
-@@ -28,6 +28,7 @@
++++ openssl-patch/ssl/ssl_init.c	2017-12-25 11:00:14.509323114 +0300
+@@ -11,6 +11,7 @@
+ 
+ #include "internal/err.h"
+ #include <openssl/crypto.h>
++#include <openssl/engine.h>
+ #include <openssl/evp.h>
+ #include <assert.h>
+ #include "ssl_locl.h"
+@@ -28,6 +29,7 @@
      fprintf(stderr, "OPENSSL_INIT: ossl_init_ssl_base: "
              "Adding SSL ciphers and digests\n");
  #endif
