@@ -10,6 +10,17 @@ diff -ru openssl/Configurations/unix-Makefile.tmpl openssl-patch/Configurations/
  	$(RM) core
  	$(RM) tags TAGS doc-nits
  	$(RM) test/.rnd
+diff -ru openssl/crypto/include/internal/engine.h openssl-patch/crypto/include/internal/engine.h
+--- openssl/crypto/include/internal/engine.h	2017-12-21 12:53:06.693977286 +0300
++++ openssl-patch/crypto/include/internal/engine.h	2017-12-25 10:48:03.445685620 +0300
+@@ -13,6 +13,7 @@
+ void engine_load_cryptodev_int(void);
+ void engine_load_rdrand_int(void);
+ void engine_load_dynamic_int(void);
++void engine_load_gost_int(void);
+ void engine_load_padlock_int(void);
+ void engine_load_capi_int(void);
+ void engine_load_dasync_int(void);
 diff -ru openssl/crypto/init.c openssl-patch/crypto/init.c
 --- openssl/crypto/init.c	2017-12-25 09:28:25.385264074 +0300
 +++ openssl-patch/crypto/init.c	2017-12-25 09:27:58.209280081 +0300
