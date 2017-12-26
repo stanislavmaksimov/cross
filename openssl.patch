@@ -1,3 +1,24 @@
+diff -ru openssl/Configurations/10-main.conf openssl-patch/Configurations/10-main.conf
+--- openssl/Configurations/10-main.conf	2017-12-26 16:25:53.080130200 +0300
++++ openssl-patch/Configurations/10-main.conf	2017-12-26 16:19:21.473353500 +0300
+@@ -1314,7 +1314,7 @@
+                                            ($disabled{shared} ? "" : "/MD")
+                                                ." /O2";
+                                        })),
+-        lib_cflags       => add(sub { $disabled{shared} ? "/MT /Zl" : () }),
++        lib_cflags       => add(sub { $disabled{shared} ? "/MD /Zl" : () }),
+         # Following might/should appears controversial, i.e. defining
+         # /MDd without evaluating $disabled{shared}. It works in
+         # non-shared build because static library is compiled with /Zl
+@@ -1327,7 +1327,7 @@
+         # prefer [non-debug] openssl.exe to be free from Micorosoft RTL
+         # redistributable.
+         bin_cflags       => add(picker(debug   => "/MDd",
+-                                       release => sub { $disabled{shared} ? "/MT" : () },
++                                       release => sub { $disabled{shared} ? "/MD" : () },
+                                       )),
+         bin_lflags       => add("/subsystem:console /opt:ref"),
+         ex_libs          => add(sub {
 diff -ru openssl/Configurations/unix-Makefile.tmpl openssl-patch/Configurations/unix-Makefile.tmpl
 --- openssl/Configurations/unix-Makefile.tmpl	2017-12-25 09:30:08.297188355 +0300
 +++ openssl-patch/Configurations/unix-Makefile.tmpl	2017-12-25 09:30:33.701159799 +0300
@@ -10,6 +31,17 @@ diff -ru openssl/Configurations/unix-Makefile.tmpl openssl-patch/Configurations/
  	$(RM) core
  	$(RM) tags TAGS doc-nits
  	$(RM) test/.rnd
+diff -ru openssl/Configurations/windows-makefile.tmpl openssl-patch/Configurations/windows-makefile.tmpl
+--- openssl/Configurations/windows-makefile.tmpl	2017-12-26 16:25:53.095755700 +0300
++++ openssl-patch/Configurations/windows-makefile.tmpl	2017-12-26 16:19:21.442102900 +0300
+@@ -241,6 +241,7 @@
+ 	-del /Q /F $(GENERATED)
+ 	-del /Q /S /F *.d
+ 	-del /Q /S /F *.obj
++        -del /Q /S /F ..\gost-engine\*.obj
+ 	-del /Q /S /F *.pdb
+ 	-del /Q /S /F *.exp
+ 	-del /Q /S /F engines\*.ilk
 diff -ru openssl/crypto/include/internal/engine.h openssl-patch/crypto/include/internal/engine.h
 --- openssl/crypto/include/internal/engine.h	2017-12-21 12:53:06.693977286 +0300
 +++ openssl-patch/crypto/include/internal/engine.h	2017-12-25 10:48:03.445685620 +0300
@@ -72,7 +104,6 @@ diff -ru openssl/engines/build.info openssl-patch/engines/build.info
 +    SOURCE[../libcrypto]=../../gost-engine/gost_ctl.c
 +    SOURCE[../libcrypto]=../../gost-engine/gosthash.c
 +    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_defines.c
-+    SOURCE[../libcrypto]=../../gost-engine/gost12sum.c
 +    SOURCE[../libcrypto]=../../gost-engine/gost_md.c
 +    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_galois_precompiled.c
 +    SOURCE[../libcrypto]=../../gost-engine/gost_crypt.c
@@ -85,7 +116,6 @@ diff -ru openssl/engines/build.info openssl-patch/engines/build.info
 +    SOURCE[../libcrypto]=../../gost-engine/gost_asn1.c
 +    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_precompiled.c
 +    SOURCE[../libcrypto]=../../gost-engine/gost_grasshopper_mac.c
-+    SOURCE[../libcrypto]=../../gost-engine/gostsum.c
    ELSE
      ENGINES=padlock
      SOURCE[padlock]=e_padlock.c {- $target{padlock_asm_src} -}

@@ -18,7 +18,7 @@ diff -ru gost-engine/gost_grasshopper_math.h gost-engine-patch/gost_grasshopper_
  
  static GRASSHOPPER_INLINE uint8_t grasshopper_galois_mul(uint8_t x, uint8_t y) {
 +#ifndef __GNUC__
-+    if (x != 0 ^&^& y != 0) {
++    if (x != 0 && y != 0) {
 +#else
      if (__builtin_expect(x != 0 && y != 0, 1)) {
 +#endif
