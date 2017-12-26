@@ -20,8 +20,8 @@ diff -ru openssl/Configurations/10-main.conf openssl-patch/Configurations/10-mai
          bin_lflags       => add("/subsystem:console /opt:ref"),
          ex_libs          => add(sub {
 diff -ru openssl/Configurations/unix-Makefile.tmpl openssl-patch/Configurations/unix-Makefile.tmpl
---- openssl/Configurations/unix-Makefile.tmpl	2017-12-25 09:30:08.297188355 +0300
-+++ openssl-patch/Configurations/unix-Makefile.tmpl	2017-12-25 09:30:33.701159799 +0300
+--- openssl/Configurations/unix-Makefile.tmpl	2017-12-26 16:25:53.080130200 +0300
++++ openssl-patch/Configurations/unix-Makefile.tmpl	2017-12-26 16:19:21.457754900 +0300
 @@ -288,6 +288,8 @@
  	$(RM) $(GENERATED)
  	-$(RM) `find . -name '*{- $depext -}' -a \! -path "./.git/*"`
@@ -43,8 +43,8 @@ diff -ru openssl/Configurations/windows-makefile.tmpl openssl-patch/Configuratio
  	-del /Q /S /F *.exp
  	-del /Q /S /F engines\*.ilk
 diff -ru openssl/crypto/include/internal/engine.h openssl-patch/crypto/include/internal/engine.h
---- openssl/crypto/include/internal/engine.h	2017-12-21 12:53:06.693977286 +0300
-+++ openssl-patch/crypto/include/internal/engine.h	2017-12-25 10:48:03.445685620 +0300
+--- openssl/crypto/include/internal/engine.h	2017-12-26 16:25:53.127011100 +0300
++++ openssl-patch/crypto/include/internal/engine.h	2017-12-26 16:19:27.836012000 +0300
 @@ -13,6 +13,7 @@
  void engine_load_cryptodev_int(void);
  void engine_load_rdrand_int(void);
@@ -54,8 +54,8 @@ diff -ru openssl/crypto/include/internal/engine.h openssl-patch/crypto/include/i
  void engine_load_capi_int(void);
  void engine_load_dasync_int(void);
 diff -ru openssl/crypto/init.c openssl-patch/crypto/init.c
---- openssl/crypto/init.c	2017-12-25 09:28:25.385264074 +0300
-+++ openssl-patch/crypto/init.c	2017-12-25 09:27:58.209280081 +0300
+--- openssl/crypto/init.c	2017-12-26 16:25:53.127011100 +0300
++++ openssl-patch/crypto/init.c	2017-12-26 16:19:31.364944600 +0300
 @@ -275,6 +275,18 @@
      return 1;
  }
@@ -88,9 +88,9 @@ diff -ru openssl/crypto/init.c openssl-patch/crypto/init.c
      if ((opts & OPENSSL_INIT_ENGINE_PADLOCK)
              && !RUN_ONCE(&engine_padlock, ossl_init_engine_padlock))
 diff -ru openssl/engines/build.info openssl-patch/engines/build.info
---- openssl/engines/build.info	2017-12-25 09:28:25.385264074 +0300
-+++ openssl-patch/engines/build.info	2017-12-25 09:27:58.265280048 +0300
-@@ -6,6 +6,30 @@
+--- openssl/engines/build.info	2017-12-26 16:25:53.158256900 +0300
++++ openssl-patch/engines/build.info	2017-12-26 16:19:34.536616000 +0300
+@@ -6,6 +6,28 @@
      IF[{- !$disabled{capieng} -}]
        SOURCE[../libcrypto]=e_capi.c
      ENDIF
@@ -120,8 +120,8 @@ diff -ru openssl/engines/build.info openssl-patch/engines/build.info
      ENGINES=padlock
      SOURCE[padlock]=e_padlock.c {- $target{padlock_asm_src} -}
 diff -ru openssl/include/openssl/crypto.h openssl-patch/include/openssl/crypto.h
---- openssl/include/openssl/crypto.h	2017-12-25 09:28:25.393264070 +0300
-+++ openssl-patch/include/openssl/crypto.h	2017-12-25 09:27:58.397279970 +0300
+--- openssl/include/openssl/crypto.h	2017-12-26 16:25:53.298881900 +0300
++++ openssl-patch/include/openssl/crypto.h	2017-12-26 16:19:56.674716600 +0300
 @@ -371,6 +371,7 @@
  # define OPENSSL_INIT_ENGINE_CAPI            0x00002000L
  # define OPENSSL_INIT_ENGINE_PADLOCK         0x00004000L
@@ -139,8 +139,8 @@ diff -ru openssl/include/openssl/crypto.h openssl-patch/include/openssl/crypto.h
  
  
 diff -ru openssl/include/openssl/engine.h openssl-patch/include/openssl/engine.h
---- openssl/include/openssl/engine.h	2017-12-25 09:28:25.397264067 +0300
-+++ openssl-patch/include/openssl/engine.h	2017-12-25 09:27:58.397279970 +0300
+--- openssl/include/openssl/engine.h	2017-12-26 16:25:53.298881900 +0300
++++ openssl-patch/include/openssl/engine.h	2017-12-26 16:19:56.674716600 +0300
 @@ -330,6 +330,8 @@
  # define ENGINE_load_dynamic() \
      OPENSSL_init_crypto(OPENSSL_INIT_ENGINE_DYNAMIC, NULL)
@@ -151,8 +151,8 @@ diff -ru openssl/include/openssl/engine.h openssl-patch/include/openssl/engine.h
      OPENSSL_init_crypto(OPENSSL_INIT_ENGINE_PADLOCK, NULL)
  #  define ENGINE_load_capi() \
 diff -ru openssl/ssl/ssl_init.c openssl-patch/ssl/ssl_init.c
---- openssl/ssl/ssl_init.c	2017-12-25 09:28:25.397264067 +0300
-+++ openssl-patch/ssl/ssl_init.c	2017-12-25 11:00:14.509323114 +0300
+--- openssl/ssl/ssl_init.c	2017-12-26 16:25:53.298881900 +0300
++++ openssl-patch/ssl/ssl_init.c	2017-12-26 16:19:57.128458200 +0300
 @@ -11,6 +11,7 @@
  
  #include "internal/err.h"
