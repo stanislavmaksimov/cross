@@ -1,3 +1,65 @@
+diff -ru openssl-microsoft/crypto/evp/c_allc.c openssl-microsoft-patch/crypto/evp/c_allc.c
+--- openssl-microsoft/crypto/evp/c_allc.c	2018-01-11 10:26:40.471467500 +0300
++++ openssl-microsoft-patch/crypto/evp/c_allc.c	2018-01-12 14:14:05.914463700 +0300
+@@ -61,9 +61,16 @@
+ #include <openssl/evp.h>
+ #include <openssl/pkcs12.h>
+ #include <openssl/objects.h>
++#ifndef OPENSSL_NO_GOST
++#include <../engines/ccgost/gost_lcl.h>
++#endif
+ 
+ void OpenSSL_add_all_ciphers(void)
+ {
++#ifndef OPENSSL_NO_GOST
++    EVP_add_cipher(&cipher_gost);
++    EVP_add_cipher(&cipher_gost_cpacnt);
++#endif
+ 
+ #ifndef OPENSSL_NO_DES
+     EVP_add_cipher(EVP_des_cfb());
+diff -ru openssl-microsoft/crypto/evp/c_alld.c openssl-microsoft-patch/crypto/evp/c_alld.c
+--- openssl-microsoft/crypto/evp/c_alld.c	2018-01-11 10:26:40.473466500 +0300
++++ openssl-microsoft-patch/crypto/evp/c_alld.c	2018-01-12 14:15:16.708226400 +0300
+@@ -61,9 +61,16 @@
+ #include <openssl/evp.h>
+ #include <openssl/pkcs12.h>
+ #include <openssl/objects.h>
++#ifndef OPENSSL_NO_GOST
++#include <../engines/ccgost/gost_lcl.h>
++#endif
+ 
+ void OpenSSL_add_all_digests(void)
+ {
++#ifndef OPENSSL_NO_GOST
++    EVP_add_digest(&digest_gost);
++    EVP_add_digest(&imit_gost_cpa);
++#endif
+ #ifndef OPENSSL_NO_MD4
+     EVP_add_digest(EVP_md4());
+ #endif
+diff -ru openssl-microsoft/ssl/ssl_algs.c openssl-microsoft-patch/ssl/ssl_algs.c
+--- openssl-microsoft/ssl/ssl_algs.c	2018-01-11 10:26:43.328467700 +0300
++++ openssl-microsoft-patch/ssl/ssl_algs.c	2018-01-12 14:17:30.961257200 +0300
+@@ -60,9 +60,18 @@
+ #include <openssl/objects.h>
+ #include <openssl/lhash.h>
+ #include "ssl_locl.h"
++#ifndef OPENSSL_NO_GOST
++#include <../engines/ccgost/gost_lcl.h>
++#endif
+ 
+ int SSL_library_init(void)
+ {
++#ifndef OPENSSL_NO_GOST
++    EVP_add_cipher(&cipher_gost);
++    EVP_add_cipher(&cipher_gost_cpacnt);
++    EVP_add_digest(&digest_gost);
++    EVP_add_digest(&imit_gost_cpa);
++#endif
+ 
+ #ifndef OPENSSL_NO_DES
+     EVP_add_cipher(EVP_des_cbc());
 diff -ru openssl-microsoft/ssl/ssl_ciph.c openssl-microsoft-patch/ssl/ssl_ciph.c
 --- openssl-microsoft/ssl/ssl_ciph.c	2018-01-11 10:26:43.334466700 +0300
 +++ openssl-microsoft-patch/ssl/ssl_ciph.c	2018-01-12 11:40:15.023770600 +0300
