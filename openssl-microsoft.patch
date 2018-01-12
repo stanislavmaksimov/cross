@@ -1,0 +1,12 @@
+diff -ru openssl-microsoft/ssl/ssl_ciph.c openssl-microsoft-patch/ssl/ssl_ciph.c
+--- openssl-microsoft/ssl/ssl_ciph.c	2018-01-11 10:26:43.334466700 +0300
++++ openssl-microsoft-patch/ssl/ssl_ciph.c	2018-01-12 11:40:15.023770600 +0300
+@@ -404,6 +404,8 @@
+ 
+ void ssl_load_ciphers(void)
+ {
++    ENGINE_register_all_pkey_asn1_meths();
++
+     ssl_cipher_methods[SSL_ENC_DES_IDX] = EVP_get_cipherbyname(SN_des_cbc);
+     ssl_cipher_methods[SSL_ENC_3DES_IDX] =
+         EVP_get_cipherbyname(SN_des_ede3_cbc);
